@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenOrigin - Đăng nhập MetaMask</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #d32f2f;
+    }
+
+    .status.warning {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 15px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #e0e0e0;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .wallet-info {
+      background: #f5f5f5;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    .wallet-info h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .wallet-address {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .token-box {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 12px;
+      color: #666;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .metamask-icon {
+      text-align: center;
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="metamask-icon">🦊</div>
+    <h1>GreenOrigin</h1>
+    <p class="subtitle">Đăng nhập bằng MetaMask</p>
+
+    <div id="status" class="status info">
+      Vui lòng kết nối ví MetaMask
+    </div>
+
+    <button id="connectBtn" class="btn-primary">
+      🔗 Kết nối MetaMask
+    </button>
+
+    <button id="loginBtn" class="btn-primary hidden" disabled>
+      ✍️ Ký và Đăng nhập
+    </button>
+
+    <button id="logoutBtn" class="btn-secondary hidden">
+      🚪 Đăng xuất
+    </button>
+
+    <div id="walletInfo" class="wallet-info hidden">
+      <h3>Thông tin tài khoản</h3>
+      <div class="wallet-address" id="walletAddress"></div>
+      <div id="tokenSection" class="hidden">
+        <strong>JWT Token:</strong>
+        <div class="token-box" id="jwtToken"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+  <script>
+    const API_URL = 'http://localhost:5000/api/web3auth';
+    
+    let provider;
+    let signer;
+    let walletAddress;
+    let jwtToken;
+
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connectBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const walletInfo = document.getElementById('walletInfo');
+    const walletAddressEl = document.getElementById('walletAddress');
+    const tokenSection = document.getElementById('tokenSection');
+    const jwtTokenEl = document.getElementById('jwtToken');
+
+    // Kiểm tra MetaMask
+    function checkMetaMask() {
+      if (typeof window.ethereum === 'undefined') {
+        showStatus('error', '❌ Vui lòng cài đặt MetaMask extension!');
+        connectBtn.textContent = '📥 Tải MetaMask';
+        connectBtn.onclick = () => {
+          window.open('https://metamask.io/download/', '_blank');
+        };
+        return false;
+      }
+      return true;
+    }
+
+    // Hiển thị trạng thái
+    function showStatus(type, message) {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+    }
+
+    // Kết nối MetaMask
+    async function connectWallet() {
+      if (!checkMetaMask()) return;
+
+      try {
+        showStatus('info', '⏳ Đang kết nối MetaMask...');
+        connectBtn.disabled = true;
+
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        const accounts = await provider.send('eth_requestAccounts', []);
+        signer = provider.getSigner();
+        walletAddress = accounts[0];
+
+        showStatus('success', '✅ Đã kết nối ví thành công!');
+        walletAddressEl.textContent = walletAddress;
+        walletInfo.classList.remove('hidden');
+        
+        connectBtn.classList.add('hidden');
+        loginBtn.classList.remove('hidden');
+        loginBtn.disabled = false;
+
+      } catch (error) {
+        console.error(error);
+        showStatus('error', `❌ Lỗi: ${error.message}`);
+        connectBtn.disabled = false;
+      }
+    }
+
+    // Đăng nhập
+    async function login() {
+      try {
+        showStatus('info', '⏳ Đang tạo message để ký...');
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="loading"></span> Đang xử lý...';
+
+        // Bước 1: Lấy nonce từ server
+        const nonceResponse = await fetch(`${API_URL}/request-nonce`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ walletAddress })
+        });
+
+        const nonceData = await nonceResponse.json();
+
+        if (!nonceData.success) {
+          throw new Error(nonceData.message);
+        }
+
+        const { message } = nonceData.data;
+
+        // Bước 2: Ký message bằng MetaMask
+        showStatus('warning', '✍️ Vui lòng ký message trong MetaMask...');
+        const signature = await signer.signMessage(message);
+
+        // Bước 3: Gửi signature lên server để verify
+        showStatus('info', '⏳ Đang xác thực chữ ký...');
+        const verifyResponse = await fetch(`${API_URL}/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            walletAddress,
+            signature,
+            message
+          })
+        });
+
+        const verifyData = await verifyResponse.json();
+
+        if (!verifyData.success) {
+          throw new Error(verifyData.message);
+        }
+
+        // Lưu JWT token
+        jwtToken = verifyData.data.token;
+        localStorage.setItem('jwtToken', jwtToken);
+        localStorage.setItem('walletAddress', walletAddress);
+
+        // Hiển thị thành công
+        showStatus('success', '🎉 Đăng nhập thành công!');
+        jwtTokenEl.textContent = jwtToken;
+        tokenSection.classList.remove('hidden');
+        
+        loginBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+
+        console.log('JWT Token:', jwtToken);
+
+      } catch (error) {
+        console.error(error);
+        showStatus('error', `❌ Lỗi đăng nhập: ${error.message}`);
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '✍️ Ký và Đăng nhập';
+      }
+    }
+
+    // Đăng xuất
+    function logout() {
+      localStorage.removeItem('jwtToken');
+      localStorage.removeItem('walletAddress');
+      
+      walletAddress = null;
+      jwtToken = null;
+      
+      walletInfo.classList.add('hidden');
+      tokenSection.classList.add('hidden');
+      logoutBtn.classList.add('hidden');
+      connectBtn.classList.remove('hidden');
+      
+      showStatus('info', 'Vui lòng kết nối ví MetaMask');
+    }
+
+    // Kiểm tra session khi load
+    window.addEventListener('load', () => {
+      checkMetaMask();
+      
+      const savedToken = localStorage.getItem('jwtToken');
+      const savedAddress = localStorage.getItem('walletAddress');
+      
+      if (savedToken && savedAddress) {
+        jwtToken = savedToken;
+        walletAddress = savedAddress;
+        
+        walletAddressEl.textContent = walletAddress;
+        jwtTokenEl.textContent = jwtToken;
+        
+        walletInfo.classList.remove('hidden');
+        tokenSection.classList.remove('hidden');
+        connectBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+        
+        showStatus('success', '✅ Đã đăng nhập!');
+      }
+    });
+
+    // Event listeners
+    connectBtn.addEventListener('click', connectWallet);
+    loginBtn.addEventListener('click', login);
+    logoutBtn.addEventListener('click', logout);
+
+    // Lắng nghe thay đổi account trong MetaMask
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+          logout();
+        } else if (walletAddress && accounts[0] !== walletAddress) {
+          logout();
+          showStatus('warning', '⚠️ Tài khoản đã thay đổi. Vui lòng đăng nhập lại.');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
