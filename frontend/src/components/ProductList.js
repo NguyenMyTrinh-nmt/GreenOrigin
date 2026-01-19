@@ -15,7 +15,7 @@ function ProductList({ onEdit }) {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/products');
+      const response = await api.get('/products?limit=1000');
       if (response.data.success) {
         setProducts(response.data.data);
       }
