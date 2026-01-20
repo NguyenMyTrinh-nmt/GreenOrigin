@@ -11,8 +11,14 @@ module.exports = {
       url: DEFAULT_RPC,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : undefined,
     },
-    sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || '',
+    cronos_testnet: {
+      url: process.env.CRONOS_RPC_URL || 'https://evm-t3.cronos.org',
+      chainId: 338,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : undefined,
+    },
+    cronos_mainnet: {
+      url: process.env.CRONOS_RPC_URL || 'https://evm.cronos.org',
+      chainId: 25,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : undefined,
     }
   }

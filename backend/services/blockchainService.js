@@ -1,6 +1,6 @@
 const path = require('path');
 const { ethers } = require('ethers');
-const abi = require('../blockchain/abi/GreenOriginTraceability.json');
+const abi = require('../blockchain/abi/AgroTraceability.json');
 
 let contractInstance;
 
