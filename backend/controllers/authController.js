@@ -1,7 +1,9 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { ethers } = require('ethers');
+const bcrypt = require('bcryptjs');
 const LoginHistory = require('../models/LoginHistory');
+const User = require('../models/User');
 
 // Lưu trữ tạm thời nonce (trong production nên dùng Redis)
 const nonceStore = new Map();
@@ -186,3 +188,70 @@ setInterval(() => {
     }
   }
 }, 10 * 60 * 1000);
+
+// Đăng nhập bằng tài khoản (username/email + mật khẩu)
+exports.loginWithCredentials = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!password || (!username && !email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email/username và mật khẩu là bắt buộc'
+      });
+    }
+
+    const query = username ? { username } : { email };
+    const user = await User.findOne(query);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Tài khoản hoặc mật khẩu không đúng'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Tài khoản hoặc mật khẩu không đúng'
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        username: user.username,
+        role: user.role,
+        type: 'account'
+      },
+      process.env.JWT_SECRET || 'greenorigin_secret_key_2025_metamask',
+      { expiresIn: process.env.JWT_EXPIRE || '7d' }
+    );
+
+    const safeUser = {
+      id: user._id,
+      username: user.username,
+      role: user.role,
+      email: user.email,
+      walletAddress: user.walletAddress
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: 'Đăng nhập thành công',
+      data: {
+        token,
+        user: safeUser
+      }
+    });
+  } catch (error) {
+    console.error('loginWithCredentials error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to login',
+      error: error.message
+    });
+  }
+};

@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         // Chỉ chấp nhận các giá trị này (Giúp kiểm soát quyền)
-        enum: ['GROWER', 'TRANSPORTER', 'VERIFIER', 'ADMIN'] 
+        enum: ['GROWER', 'TRANSPORTER', 'VERIFIER', 'ADMIN', 'CONSUMER'] 
     },
     email: {
         type: String,

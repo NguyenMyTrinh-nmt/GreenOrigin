@@ -28,9 +28,12 @@ const auth = async (req, res, next) => {
         process.env.JWT_SECRET || 'greenorigin_secret_key_2025_metamask'
       );
 
-      // Gắn thông tin user vào request
+      // Gắn thông tin user vào request (hỗ trợ cả web3 và account login)
       req.user = {
         walletAddress: decoded.walletAddress,
+        userId: decoded.userId,
+        username: decoded.username,
+        role: decoded.role || 'ADMIN', // tạm thời mặc định ADMIN nếu không có (web3 login)
         type: decoded.type
       };
 

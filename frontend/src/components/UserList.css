@@ -1,0 +1,85 @@
+.user-list-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.user-list-container .list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.user-list-container .btn-primary {
+  background: #2ecc71;
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.user-table th {
+  text-align: left;
+  background: #f8f9fa;
+}
+
+.user-table button {
+  margin-right: 8px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.user-form-modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 95vw;
+}
+
+.user-form-modal .form-group {
+  margin-bottom: 12px;
+}
+
+.user-form-modal label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.user-form-modal input,
+.user-form-modal select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.user-form-modal .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}

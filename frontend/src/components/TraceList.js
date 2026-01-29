@@ -239,6 +239,11 @@ function TraceList() {
                             <span className="trace-action">{trace.action}</span>
                             <span className="trace-index">Bước {index + 1}</span>
                           </div>
+                          {traces.findIndex(t => t.action === trace.action) !== index && (
+                            <div className="trace-update-note">
+                              Đây là lần cập nhật thông tin cho bước "{trace.action}" để đảm bảo minh bạch.
+                            </div>
+                          )}
                           <div className="trace-details">
                             <div className="trace-detail">
                               <span className="label">📍 Địa điểm:</span>

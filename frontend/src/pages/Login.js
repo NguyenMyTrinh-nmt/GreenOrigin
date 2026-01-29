@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { connectWallet, loginWithMetaMask } from '../utils/web3Auth';
+import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
@@ -10,6 +11,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleMetaMaskLogin = async () => {
     try {
@@ -22,9 +25,12 @@ function Login() {
 
       // Đăng nhập
       const result = await loginWithMetaMask(signer, address);
-      
-      // Cập nhật auth context
-      login(result.walletAddress, result.token);
+
+      // Cập nhật auth context với thông tin user (nếu có)
+      if (result?.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
+      login(result.walletAddress, result.token, result.user || null);
 
       // Chuyển đến trang dashboard
       navigate('/dashboard');
@@ -38,6 +44,41 @@ function Login() {
       } else {
         setError(err.message || 'Đã xảy ra lỗi khi đăng nhập');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAccountLogin = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const response = await api.post('/web3auth/login', {
+        email,
+        password
+      });
+
+      if (response.data.success) {
+        const { token, user } = response.data.data;
+        // Lưu token giống như MetaMask login
+        localStorage.setItem('jwtToken', token);
+        if (user.walletAddress) {
+          localStorage.setItem('walletAddress', user.walletAddress);
+        } else {
+          localStorage.removeItem('walletAddress');
+        }
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Cập nhật auth context (địa chỉ ví có thể null)
+        login(user.walletAddress || null, token, user);
+        navigate('/dashboard');
+      } else {
+        setError(response.data.message || 'Đăng nhập thất bại');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || err.message || 'Đăng nhập thất bại');
     } finally {
       setLoading(false);
     }
@@ -70,25 +111,37 @@ function Login() {
             type="email"
             placeholder="admin@gmail.com"
             className="input-field"
-            disabled
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           
           <input
             type="password"
             placeholder="••••••"
             className="input-field"
-            disabled
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <button
             className="metamask-button"
+            onClick={handleAccountLogin}
+            disabled={loading}
+          >
+            {loading ? 'Đang đăng nhập...' : '🔐 Đăng nhập bằng tài khoản'}
+          </button>
+
+          <div className="divider">Hoặc</div>
+
+          <button
+            className="metamask-button secondary"
             onClick={handleMetaMaskLogin}
             disabled={loading}
           >
             {loading ? (
               <>
                 <span className="spinner"></span>
-                Đang kết nối...
+                Đang kết nối MetaMask...
               </>
             ) : (
               <>
@@ -99,7 +152,7 @@ function Login() {
         </div>
 
         <div className="login-footer">
-          <p>Sử dụng ví MetaMask để đăng nhập an toàn</p>
+          <p>Có thể đăng nhập bằng tài khoản quản trị hoặc ví MetaMask</p>
         </div>
       </div>
     </div>

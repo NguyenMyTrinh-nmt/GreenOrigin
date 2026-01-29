@@ -14,14 +14,14 @@ async function updateAllProducts() {
     console.log(`📦 Found ${products.length} products\n`);
 
     const locations = [
-      'Ấp 3, Xã Thanh Hưng, Đông Thấp',
-      'Ấp 2, Xã An Hữu, Đông Thấp', 
+      'Ấp 3, Xã Thanh Hưng, Đông Tháp',
+      'Ấp 2, Xã An Hữu, Đông Tháp', 
       'Ấp 1, Xã Tân Lợi, Đồng Tháp',
       'Ấp 4, Xã Bình Thành, Đồng Tháp'
     ];
 
     const packingLocations = [
-      'Ấp 2, Xã An Hữu, Đông Thấp',
+      'Ấp 2, Xã An Hữu, Đông Tháp',
       'Khu công nghiệp Tân Lợi, Đồng Tháp',
       'Nhà máy chế biến Thanh Hưng',
       'Trung tâm đóng gói Bình Thành'
@@ -56,38 +56,69 @@ async function updateAllProducts() {
     let updated = 0;
     
     for (const product of products) {
+      // Chỉ tự động điền cho những field ĐANG BỊ THIẾU, không ghi đè dữ liệu bạn đã nhập từ form sản phẩm
       const randomLoc = locations[Math.floor(Math.random() * locations.length)];
       const randomPackLoc = packingLocations[Math.floor(Math.random() * packingLocations.length)];
       const randomSupplier = suppliers[Math.floor(Math.random() * suppliers.length)];
-      
-      // Tạo ngày thu hoạch (7-14 ngày trước)
-      const harvestDate = new Date();
-      harvestDate.setDate(harvestDate.getDate() - Math.floor(Math.random() * 7 + 7));
-      
-      // Ngày đóng gói (1-2 ngày sau thu hoạch)
-      const packingDate = new Date(harvestDate);
-      packingDate.setDate(packingDate.getDate() + Math.floor(Math.random() * 2 + 1));
-      
-      // Ngày giao hàng (1-2 ngày sau đóng gói)
-      const deliveryDate = new Date(packingDate);
-      deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 2 + 1));
 
-      product.location = randomLoc;
-      product.packingLocation = randomPackLoc;
-      product.supplier = randomSupplier;
-      product.lotNumber = `${product.location.split(',')[0].trim()} - Khu 03 - ${product.name}`;
-      product.harvestDate = harvestDate;
-      product.packingDate = packingDate;
-      product.deliveryDate = deliveryDate;
-      product.certifications = certifications;
+      let changed = false;
       
-      await product.save();
-      updated++;
+      // Nếu chưa có location thì mới fill demo
+      if (!product.location) {
+        product.location = randomLoc;
+        changed = true;
+      }
+
+      if (!product.packingLocation) {
+        product.packingLocation = randomPackLoc;
+        changed = true;
+      }
+
+      if (!product.supplier) {
+        product.supplier = randomSupplier;
+        changed = true;
+      }
+
+      if (!product.lotNumber && product.location) {
+        product.lotNumber = `${product.location.split(',')[0].trim()} - Khu 03 - ${product.name}`;
+        changed = true;
+      }
+
+      // Chỉ set ngày tháng nếu hiện đang trống
+      if (!product.harvestDate || !product.packingDate || !product.deliveryDate) {
+        // Tạo ngày thu hoạch (7-14 ngày trước)
+        const harvestDate = new Date();
+        harvestDate.setDate(harvestDate.getDate() - Math.floor(Math.random() * 7 + 7));
+        
+        // Ngày đóng gói (1-2 ngày sau thu hoạch)
+        const packingDate = new Date(harvestDate);
+        packingDate.setDate(packingDate.getDate() + Math.floor(Math.random() * 2 + 1));
+        
+        // Ngày giao hàng (1-2 ngày sau đóng gói)
+        const deliveryDate = new Date(packingDate);
+        deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 2 + 1));
+
+        if (!product.harvestDate) product.harvestDate = harvestDate;
+        if (!product.packingDate) product.packingDate = packingDate;
+        if (!product.deliveryDate) product.deliveryDate = deliveryDate;
+        changed = true;
+      }
+
+      if (!product.certifications || product.certifications.length === 0) {
+        product.certifications = certifications;
+        changed = true;
+      }
       
-      console.log(`✅ Updated ${product.productId} - ${product.name}`);
+      if (changed) {
+        await product.save();
+        updated++;
+        console.log(`✅ Filled missing info for ${product.productId} - ${product.name}`);
+      } else {
+        console.log(`ℹ️  Skipped ${product.productId} - ${product.name} (already has full info)`);
+      }
     }
 
-    console.log(`\n🎉 Successfully updated ${updated} products!`);
+    console.log(`\n🎉 Successfully updated ${updated} products with missing info!`);
     
     // Hiển thị ví dụ một sản phẩm
     const sample = await Product.findOne({});

@@ -196,6 +196,16 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.trace-update-note {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #ecfeff;
+  color: #0369a1;
+  font-size: 12px;
+  border: 1px dashed #0ea5e9;
+}
+
 .traces-header {
   display: flex;
   justify-content: space-between;

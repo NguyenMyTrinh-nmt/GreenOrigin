@@ -27,10 +27,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const batchRoutes = require('./routes/batchRoutes');
 const web3AuthRoutes = require('./routes/web3AuthRoutes');
 const productRoutes = require('./routes/productRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 app.use('/api/batches', batchRoutes);
 app.use('/api/web3auth', web3AuthRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

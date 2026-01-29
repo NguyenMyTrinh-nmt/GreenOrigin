@@ -4,12 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import ProductForm from '../components/ProductForm';
 import ProductList from '../components/ProductList';
 import TraceList from '../components/TraceList';
+import UserList from '../components/UserList';
 import api from '../utils/api';
 import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { walletAddress, logout } = useAuth();
+  const { walletAddress, role, user, logout } = useAuth();
   const [showProductForm, setShowProductForm] = useState(false);
   const [currentView, setCurrentView] = useState('overview'); // 'overview', 'products', 'trace', etc.
   const [products, setProducts] = useState([]);
@@ -76,6 +77,10 @@ function Dashboard() {
         </div>
         <div className="header-right">
           <div className="wallet-info">
+            <span className="wallet-label">Vai trò:</span>
+            <span className="wallet-address role-badge">{role}</span>
+          </div>
+          <div className="wallet-info">
             <span className="wallet-label">Ví:</span>
             <span className="wallet-address">
               {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'N/A'}
@@ -97,13 +102,15 @@ function Dashboard() {
               <span className="icon">📊</span>
               <span>Tổng quan</span>
             </button>
-            <button 
-              className={`nav-item ${currentView === 'products' ? 'active' : ''}`}
-              onClick={() => setCurrentView('products')}
-            >
-              <span className="icon">🌾</span>
-              <span>Sản phẩm</span>
-            </button>
+            {(role === 'ADMIN') && (
+              <button 
+                className={`nav-item ${currentView === 'products' ? 'active' : ''}`}
+                onClick={() => setCurrentView('products')}
+              >
+                <span className="icon">🌾</span>
+                <span>Sản phẩm</span>
+              </button>
+            )}
             <button 
               className={`nav-item ${currentView === 'trace' ? 'active' : ''}`}
               onClick={() => setCurrentView('trace')}
@@ -111,13 +118,15 @@ function Dashboard() {
               <span className="icon">📝</span>
               <span>Truy vết</span>
             </button>
-            <button 
-              className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
-              onClick={() => setCurrentView('users')}
-            >
-              <span className="icon">👥</span>
-              <span>Người dùng</span>
-            </button>
+            {role === 'ADMIN' && (
+              <button 
+                className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
+                onClick={() => setCurrentView('users')}
+              >
+                <span className="icon">👥</span>
+                <span>Người dùng</span>
+              </button>
+            )}
             <button 
               className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
               onClick={() => setCurrentView('settings')}
@@ -220,10 +229,7 @@ function Dashboard() {
           )}
 
           {currentView === 'users' && (
-            <div className="coming-soon">
-              <h2>👥 Quản lý người dùng</h2>
-              <p>Chức năng đang phát triển...</p>
-            </div>
+            <UserList />
           )}
 
           {currentView === 'settings' && (
