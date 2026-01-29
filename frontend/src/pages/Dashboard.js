@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProductForm from '../components/ProductForm';
 import ProductList from '../components/ProductList';
+import TraceList from '../components/TraceList';
 import api from '../utils/api';
 import './Dashboard.css';
 
@@ -18,6 +19,23 @@ function Dashboard() {
     verified: 0,
     transactions: 0
   });
+
+  // Load stats from backend
+  const loadStats = async () => {
+    try {
+      const response = await api.get('/batches/stats');
+      if (response.data.success) {
+        setStats({
+          totalProducts: response.data.data.totalBatches || 0,
+          totalRecords: response.data.data.totalTraces || 0,
+          verified: response.data.data.verified || 0,
+          transactions: response.data.data.transactions || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -42,6 +60,7 @@ function Dashboard() {
 
   useEffect(() => {
     loadProducts();
+    loadStats();
   }, []);
 
   const handleProductAdded = () => {
@@ -130,7 +149,7 @@ function Dashboard() {
               <div className="stat-icon">📝</div>
               <div className="stat-info">
                 <h3>Bản ghi truy vết</h3>
-                <p className="stat-number">0</p>
+                <p className="stat-number">{stats.totalRecords}</p>
               </div>
             </div>
 
@@ -138,7 +157,7 @@ function Dashboard() {
               <div className="stat-icon">✅</div>
               <div className="stat-info">
                 <h3>Đã xác thực</h3>
-                <p className="stat-number">0</p>
+                <p className="stat-number">{stats.verified}</p>
               </div>
             </div>
 
@@ -146,7 +165,7 @@ function Dashboard() {
               <div className="stat-icon">🔗</div>
               <div className="stat-info">
                 <h3>Blockchain Tx</h3>
-                <p className="stat-number">0</p>
+                <p className="stat-number">{stats.transactions}</p>
               </div>
             </div>
           </div>
@@ -160,7 +179,10 @@ function Dashboard() {
               >
                 ➕ Thêm sản phẩm mới
               </button>
-              <button className="action-button secondary">
+              <button 
+                className="action-button secondary"
+                onClick={() => setCurrentView('trace')}
+              >
                 📝 Tạo bản ghi truy vết
               </button>
               <button className="action-button secondary">
@@ -194,10 +216,7 @@ function Dashboard() {
           )}
 
           {currentView === 'trace' && (
-            <div className="coming-soon">
-              <h2>📝 Truy vết</h2>
-              <p>Chức năng đang phát triển...</p>
-            </div>
+            <TraceList />
           )}
 
           {currentView === 'users' && (

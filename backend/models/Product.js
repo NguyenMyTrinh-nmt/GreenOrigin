@@ -33,10 +33,41 @@ const productSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Thông tin chi tiết sản phẩm
+  supplier: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  packingLocation: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  lotNumber: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   harvestDate: {
     type: Date,
     default: Date.now
   },
+  packingDate: {
+    type: Date
+  },
+  deliveryDate: {
+    type: Date
+  },
+  // Thông tin chứng nhận
+  certifications: [{
+    name: String,        // VietGAP, GlobalGAP, Organic...
+    standard: String,    // Tiêu chuẩn
+    certificateNumber: String,  // Mã số giấy chứng nhận
+    validUntil: Date,    // Có hiệu lực đến
+    issuedBy: String,    // Cơ quan cấp
+    documentUrl: String  // Link tài liệu
+  }],
   quantity: {
     type: Number,
     default: 0

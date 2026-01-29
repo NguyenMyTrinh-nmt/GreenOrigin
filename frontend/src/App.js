@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import PublicTrace from './pages/PublicTrace';
 import './App.css';
 
 // Protected Route Component
@@ -32,6 +33,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/trace/:productId" element={<PublicTrace />} />
           <Route
             path="/dashboard"
             element={

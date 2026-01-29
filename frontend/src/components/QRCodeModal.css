@@ -1,0 +1,162 @@
+.qr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.qr-modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.qr-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.qr-modal-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.qr-modal-body {
+  padding: 32px 24px;
+}
+
+.product-info {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.product-info h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.product-id {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  background-color: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 2px solid #e5e7eb;
+}
+
+.qr-code-container svg {
+  border-radius: 8px;
+}
+
+.qr-instructions {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.qr-instructions p {
+  margin: 0 0 12px 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.qr-url {
+  background-color: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.qr-url small {
+  color: #6b7280;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.qr-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-download,
+.btn-close-modal {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.btn-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-close-modal {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.btn-close-modal:hover {
+  background-color: #e5e7eb;
+}
+
+@media (max-width: 480px) {
+  .qr-modal-content {
+    width: 95%;
+    max-width: none;
+  }
+
+  .qr-code-container {
+    padding: 15px;
+  }
+
+  .qr-code-container svg {
+    width: 240px !important;
+    height: 240px !important;
+  }
+}

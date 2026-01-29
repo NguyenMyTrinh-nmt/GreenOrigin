@@ -1,5 +1,8 @@
 const Product = require('../models/Product');
+const BatchMetadata = require('../models/BatchMetadata');
+const ProductUpdate = require('../models/ProductUpdate');
 const blockchainService = require('../services/blockchainService');
+const crypto = require('crypto');
 
 // Tạo sản phẩm mới
 exports.createProduct = async (req, res) => {
@@ -55,15 +58,28 @@ exports.createProduct = async (req, res) => {
 
     await product.save();
 
-    // Tạo batch trên blockchain (optional)
+    // Tạo batch trên blockchain và lưu metadata
+    let transactionHash = '';
     try {
       const harvestTimestamp = Math.floor(new Date(product.harvestDate).getTime() / 1000);
-      await blockchainService.createBatchOnChain({
+      const blockchainResult = await blockchainService.createBatchOnChain({
         batchId: productId,
         growerId: farmerId,
         productName: name,
         harvestDate: harvestTimestamp
       });
+      transactionHash = blockchainResult.transactionHash;
+
+      // Tạo BatchMetadata để có thể truy vết
+      const batchMetadata = new BatchMetadata({
+        batch_id: productId,
+        product_name: name,
+        latest_transaction_hash: transactionHash,
+        owner_id: product._id,
+        image_url: imageUrl,
+        description: description
+      });
+      await batchMetadata.save();
     } catch (blockchainError) {
       console.error('Blockchain error (non-critical):', blockchainError.message);
       // Không fail nếu blockchain lỗi, vẫn lưu được vào database
@@ -156,7 +172,7 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // Update fields
+    // Update fields - bao gồm cả các trường mới
     const allowedUpdates = [
       'name',
       'category',
@@ -164,7 +180,14 @@ exports.updateProduct = async (req, res) => {
       'location',
       'quantity',
       'unit',
-      'status'
+      'status',
+      'supplier',
+      'packingLocation',
+      'lotNumber',
+      'harvestDate',
+      'packingDate',
+      'deliveryDate',
+      'certifications'
     ];
 
     allowedUpdates.forEach(field => {
@@ -200,6 +223,157 @@ exports.updateProduct = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to update product',
+      error: error.message
+    });
+  }
+};
+
+// Cập nhật sản phẩm theo productId (SP001, SP002...) - APPEND-ONLY
+exports.updateProductByProductId = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await Product.findOne({ productId });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Xác định các field đã thay đổi
+    const updatedFields = {};
+    const allowedUpdates = [
+      'name',
+      'supplier',
+      'farmerName',
+      'location',
+      'packingLocation',
+      'lotNumber',
+      'harvestDate',
+      'packingDate',
+      'deliveryDate',
+      'certifications',
+      'description'
+    ];
+
+    allowedUpdates.forEach(field => {
+      if (req.body[field] !== undefined && req.body[field] !== null && req.body[field] !== '') {
+        updatedFields[field] = req.body[field];
+        product[field] = req.body[field];
+      }
+    });
+
+    if (Object.keys(updatedFields).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No fields to update'
+      });
+    }
+
+    // Lưu product (vẫn cần để có dữ liệu đầy đủ cho query nhanh)
+    product.updatedAt = Date.now();
+    await product.save();
+
+    // Tạo snapshot đầy đủ tại thời điểm này
+    const snapshot = {
+      name: product.name,
+      supplier: product.supplier,
+      farmerName: product.farmerName,
+      location: product.location,
+      packingLocation: product.packingLocation,
+      lotNumber: product.lotNumber,
+      harvestDate: product.harvestDate,
+      packingDate: product.packingDate,
+      deliveryDate: product.deliveryDate,
+      certifications: product.certifications,
+      description: product.description,
+      imageUrl: product.imageUrl
+    };
+
+    // Tạo hash của snapshot
+    const dataToHash = JSON.stringify({
+      productId,
+      snapshot,
+      timestamp: Date.now()
+    });
+    const blockchainHash = crypto.createHash('sha256').update(dataToHash).digest('hex');
+
+    // Tạo bản ghi lịch sử (APPEND-ONLY)
+    const productUpdate = new ProductUpdate({
+      productId,
+      updateType: req.body.certifications ? 'UPDATE_CERTIFICATION' : 
+                  (req.body.harvestDate || req.body.packingDate) ? 'UPDATE_DATES' : 
+                  'UPDATE_INFO',
+      updatedFields,
+      snapshot,
+      blockchainHash,
+      updatedBy: req.user?.walletAddress || 'system',
+      reason: req.body.reason || 'Cập nhật thông tin sản phẩm',
+      timestamp: new Date()
+    });
+
+    await productUpdate.save();
+
+    // (Optional) Ghi hash lên blockchain để bảo mật
+    // Có thể thêm sau nếu cần xác thực nghiêm ngặt
+
+    // Cập nhật BatchMetadata
+    try {
+      await BatchMetadata.updateOne(
+        { batch_id: productId },
+        { 
+          product_name: product.name,
+          description: product.description,
+          image_url: product.imageUrl
+        }
+      );
+    } catch (batchError) {
+      console.log('BatchMetadata update skipped:', batchError.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Cập nhật thành công (đã tạo bản ghi mới)',
+      data: {
+        product,
+        updateRecord: {
+          id: productUpdate._id,
+          blockchainHash,
+          timestamp: productUpdate.timestamp,
+          updatedFields: Object.keys(updatedFields)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('updateProductByProductId error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update product',
+      error: error.message
+    });
+  }
+};
+
+// Lấy lịch sử cập nhật sản phẩm (để hiển thị timeline)
+exports.getProductUpdateHistory = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    const updates = await ProductUpdate.find({ productId })
+      .sort({ timestamp: -1 })
+      .limit(50);
+
+    return res.status(200).json({
+      success: true,
+      data: updates,
+      total: updates.length
+    });
+  } catch (error) {
+    console.error('getProductUpdateHistory error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch update history',
       error: error.message
     });
   }
