@@ -127,13 +127,6 @@ function Dashboard() {
                 <span>Người dùng</span>
               </button>
             )}
-            <button 
-              className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
-              onClick={() => setCurrentView('settings')}
-            >
-              <span className="icon">⚙️</span>
-              <span>Cài đặt</span>
-            </button>
           </nav>
         </aside>
 
@@ -230,13 +223,6 @@ function Dashboard() {
 
           {currentView === 'users' && (
             <UserList />
-          )}
-
-          {currentView === 'settings' && (
-            <div className="coming-soon">
-              <h2>⚙️ Cài đặt</h2>
-              <p>Chức năng đang phát triển...</p>
-            </div>
           )}
         </main>
       </div>
