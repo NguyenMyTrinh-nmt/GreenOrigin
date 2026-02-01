@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './ProductList.css';
 
 function ProductList({ onEdit }) {
+  const { role } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -91,7 +93,7 @@ function ProductList({ onEdit }) {
               {product.imageUrl && (
                 <div className="product-image">
                   <img 
-                    src={`http://localhost:5000${product.imageUrl}`} 
+                    src={`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'}${product.imageUrl}`} 
                     alt={product.name}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -145,12 +147,15 @@ function ProductList({ onEdit }) {
                 >
                   👁️ Xem
                 </button>
-                <button 
-                  className="btn-delete"
-                  onClick={() => handleDelete(product._id)}
-                >
-                  🗑️ Xóa
-                </button>
+                {/* Chỉ ADMIN mới có quyền xóa sản phẩm */}
+                {role === 'ADMIN' && (
+                  <button 
+                    className="btn-delete"
+                    onClick={() => handleDelete(product._id)}
+                  >
+                    🗑️ Xóa
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -169,7 +174,7 @@ function ProductList({ onEdit }) {
               {selectedProduct.imageUrl && (
                 <div className="detail-image">
                   <img 
-                    src={`http://localhost:5000${selectedProduct.imageUrl}`} 
+                    src={`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'}${selectedProduct.imageUrl}`} 
                     alt={selectedProduct.name}
                   />
                 </div>

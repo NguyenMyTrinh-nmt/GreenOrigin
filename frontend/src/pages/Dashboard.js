@@ -95,6 +95,7 @@ function Dashboard() {
       <div className="dashboard-container">
         <aside className="sidebar">
           <nav className="nav-menu">
+            {/* Tất cả roles đều xem được Tổng quan */}
             <button 
               className={`nav-item ${currentView === 'overview' ? 'active' : ''}`}
               onClick={() => setCurrentView('overview')}
@@ -102,22 +103,28 @@ function Dashboard() {
               <span className="icon">📊</span>
               <span>Tổng quan</span>
             </button>
-            {(role === 'ADMIN') && (
+            
+            {/* Tất cả roles đều xem được Sản phẩm */}
+            <button 
+              className={`nav-item ${currentView === 'products' ? 'active' : ''}`}
+              onClick={() => setCurrentView('products')}
+            >
+              <span className="icon">🌾</span>
+              <span>Sản phẩm</span>
+            </button>
+            
+            {/* Tất cả roles trừ CONSUMER đều xem được Truy vết */}
+            {role !== 'CONSUMER' && (
               <button 
-                className={`nav-item ${currentView === 'products' ? 'active' : ''}`}
-                onClick={() => setCurrentView('products')}
+                className={`nav-item ${currentView === 'trace' ? 'active' : ''}`}
+                onClick={() => setCurrentView('trace')}
               >
-                <span className="icon">🌾</span>
-                <span>Sản phẩm</span>
+                <span className="icon">📝</span>
+                <span>Truy vết</span>
               </button>
             )}
-            <button 
-              className={`nav-item ${currentView === 'trace' ? 'active' : ''}`}
-              onClick={() => setCurrentView('trace')}
-            >
-              <span className="icon">📝</span>
-              <span>Truy vết</span>
-            </button>
+            
+            {/* Chỉ ADMIN xem được Người dùng */}
             {role === 'ADMIN' && (
               <button 
                 className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
@@ -175,18 +182,27 @@ function Dashboard() {
           <div className="action-section">
             <h3>Thao tác nhanh</h3>
             <div className="action-buttons">
-              <button 
-                className="action-button primary"
-                onClick={() => setShowProductForm(true)}
-              >
-                ➕ Thêm sản phẩm mới
-              </button>
-              <button 
-                className="action-button secondary"
-                onClick={() => setCurrentView('trace')}
-              >
-                📝 Tạo bản ghi truy vết
-              </button>
+              {/* Chỉ ADMIN và GROWER có thể thêm sản phẩm */}
+              {(role === 'ADMIN' || role === 'GROWER') && (
+                <button 
+                  className="action-button primary"
+                  onClick={() => setShowProductForm(true)}
+                >
+                  ➕ Thêm sản phẩm mới
+                </button>
+              )}
+              
+              {/* GROWER, TRANSPORTER, VERIFIER, ADMIN có thể thêm truy vết */}
+              {(role === 'ADMIN' || role === 'GROWER' || role === 'TRANSPORTER' || role === 'VERIFIER') && (
+                <button 
+                  className="action-button secondary"
+                  onClick={() => setCurrentView('trace')}
+                >
+                  📝 Tạo bản ghi truy vết
+                </button>
+              )}
+              
+              {/* Tất cả roles đều xem được báo cáo */}
               <button className="action-button secondary">
                 📊 Xem báo cáo
               </button>
@@ -206,7 +222,7 @@ function Dashboard() {
               </div>
               <div className="info-row">
                 <span className="label">Backend API:</span>
-                <span className="value success">✅ http://localhost:5000</span>
+                <span className="value success">✅ {process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'}</span>
               </div>
             </div>
           </div>

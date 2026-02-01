@@ -16,25 +16,29 @@ const {
 // Tạo batch mới (legacy)
 router.post('/', createBatch);
 
-// Thêm sản phẩm mới vào blockchain (chỉ ADMIN)
-router.post('/products', auth, authorizeRole('ADMIN'), addProduct);
+// Thêm sản phẩm mới vào blockchain (ADMIN và GROWER)
+router.post('/products', auth, authorizeRole('ADMIN', 'GROWER'), addProduct);
 
 // Đồng bộ trạng thái blockchain
 router.get('/sync/:productId', syncBlockchainStatus);
 
-// Lấy danh sách tất cả các batches
+// Lấy danh sách tất cả các batches (tất cả roles)
 router.get('/', getAllBatches);
 
-// Lấy thống kê
+// Lấy thống kê (tất cả roles)
 router.get('/stats', getStats);
 
-// Lấy thông tin một sản phẩm
+// Lấy thông tin một sản phẩm (tất cả roles - bao gồm CONSUMER)
 router.get('/:productId', getProduct);
 
-// Thêm bước truy vết cho sản phẩm (người tham gia chuỗi cung ứng)
+// Thêm bước truy vết cho sản phẩm 
+// GROWER: thêm thông tin gieo trồng, thu hoạch
+// TRANSPORTER: thêm thông tin vận chuyển
+// VERIFIER: thêm kết quả kiểm định
+// ADMIN: toàn quyền
 router.post('/:productId/traces', auth, authorizeRole('GROWER', 'TRANSPORTER', 'VERIFIER', 'ADMIN'), addTrace);
 
-// Lấy tất cả bước truy vết của sản phẩm
+// Lấy tất cả bước truy vết của sản phẩm (tất cả roles - bao gồm CONSUMER)
 router.get('/:productId/traces', getTraces);
 
 module.exports = router;

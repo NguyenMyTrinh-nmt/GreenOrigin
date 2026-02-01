@@ -6,7 +6,7 @@
 
 **QR Code chứa:** URL trang web
 ```
-http://10.10.10.47:3000/trace/SP032
+http://172.15.0.10:3000/trace/SP032
 ```
 
 **Khi quét QR, hiển thị:**
@@ -28,7 +28,7 @@ http://10.10.10.47:3000/trace/SP032
 ### Bước 1: Truy cập qua IP
 Thay vì `http://localhost:3000`, hãy mở:
 ```
-http://10.10.10.47:3000
+http://172.15.0.10:3000
 ```
 
 ### Bước 2: Đăng nhập hệ thống
@@ -148,7 +148,7 @@ http://10.10.10.47:3000
 ### Không mở được trang?
 1. Kiểm tra Wifi cùng mạng
 2. Backend đang chạy
-3. IP đúng (10.10.10.47)
+3. IP đúng (172.15.0.10)
 
 ### Không có ảnh?
 - Ảnh cần có trong `/uploads/`
@@ -158,5 +158,5 @@ http://10.10.10.47:3000
 
 ## 📞 Support
 - Check backend: `http://localhost:5000/health`
-- Check frontend: `http://10.10.10.47:3000`
+- Check frontend: `http://172.15.0.10:3000`
 - MongoDB connected: Xem log backend

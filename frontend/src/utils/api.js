@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Tự động sử dụng IP/hostname hiện tại thay vì hardcode localhost
-const API_URL = `http://${window.location.hostname}:5000/api`;
+// Sử dụng environment variable hoặc fallback về localhost
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 
 const api = axios.create({
   baseURL: API_URL,
