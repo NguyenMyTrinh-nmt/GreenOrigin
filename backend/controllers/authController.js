@@ -2,8 +2,8 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { ethers } = require('ethers');
 const bcrypt = require('bcryptjs');
-const LoginHistory = require('../../database/models/LoginHistory');
-const User = require('../../database/models/User');
+const LoginHistory = require('../models/LoginHistory');
+const User = require('../models/User');
 
 // Lưu trữ tạm thời nonce (trong production nên dùng Redis)
 const nonceStore = new Map();
@@ -135,10 +135,11 @@ exports.verifySignature = async (req, res) => {
     // Xóa nonce đã sử dụng
     nonceStore.delete(normalizedAddress);
 
-    // Tạo JWT token
+    // Tạo JWT token - gán role ADMIN mặc định cho web3 login
     const token = jwt.sign(
       { 
         walletAddress: normalizedAddress,
+        role: 'ADMIN',  // Web3 login được cấp ADMIN role
         type: 'web3'
       },
       process.env.JWT_SECRET || 'greenorigin_secret_key_2025_metamask',
@@ -166,6 +167,11 @@ exports.verifySignature = async (req, res) => {
       data: {
         token,
         walletAddress: normalizedAddress,
+        user: {
+          walletAddress: normalizedAddress,
+          role: 'ADMIN',
+          type: 'web3'
+        },
         expiresIn: process.env.JWT_EXPIRE || '7d'
       }
     });

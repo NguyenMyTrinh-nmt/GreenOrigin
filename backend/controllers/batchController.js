@@ -1,6 +1,6 @@
 const blockchainService = require('../services/blockchainService');
-const BatchMetadata = require('../../database/models/BatchMetadata');
-const Product = require('../../database/models/Product');
+const BatchMetadata = require('../models/BatchMetadata');
+const Product = require('../models/Product');
 
 const REQUIRED_FIELDS = ['batchId', 'growerId', 'productName'];
 

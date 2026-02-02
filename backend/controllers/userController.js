@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const User = require('../../database/models/User');
+const User = require('../models/User');
 
 // Lấy danh sách người dùng
 exports.getUsers = async (req, res) => {
