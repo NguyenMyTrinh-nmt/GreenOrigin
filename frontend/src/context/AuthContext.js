@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         walletAddress,
         user,
-        role: user?.role || 'ADMIN',
+        role: user?.role || null,
         loading,
         login,
         logout: handleLogout,

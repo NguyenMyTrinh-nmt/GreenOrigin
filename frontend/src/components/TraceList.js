@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import TraceForm from './TraceForm';
 import QRCodeModal from './QRCodeModal';
 import ProductUpdateForm from './ProductUpdateForm';
+import ProductDetail from './ProductDetail';
 import './TraceList.css';
 
 function TraceList() {
+  const { user } = useAuth();
   const [batches, setBatches] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [traces, setTraces] = useState([]);
@@ -13,8 +16,10 @@ function TraceList() {
   const [showTraceForm, setShowTraceForm] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showProductDetail, setShowProductDetail] = useState(false);
   const [selectedProductForQR, setSelectedProductForQR] = useState(null);
   const [selectedProductForUpdate, setSelectedProductForUpdate] = useState(null);
+  const [selectedProductForDetail, setSelectedProductForDetail] = useState(null);
   const [error, setError] = useState('');
 
   // Tải danh sách batches
@@ -146,7 +151,14 @@ function TraceList() {
               >
                 <div 
                   className="batch-item-content"
-                  onClick={() => loadTraces(batch.batch_id)}
+                  onClick={() => {
+                    if (user?.role === 'CONSUMER') {
+                      setSelectedProductForDetail(batch.batch_id);
+                      setShowProductDetail(true);
+                    } else {
+                      loadTraces(batch.batch_id);
+                    }
+                  }}
                 >
                   <div className="batch-icon">📦</div>
                   <div className="batch-info">
@@ -154,6 +166,7 @@ function TraceList() {
                     <div className="batch-name">{batch.product_name}</div>
                   </div>
                 </div>
+                {user?.role !== 'CONSUMER' && (
                 <div className="batch-actions">
                   <button 
                     className="btn-edit"
@@ -187,11 +200,13 @@ function TraceList() {
                     🔗
                   </button>
                 </div>
+                )}
               </div>
             ))}
           </div>
         </div>
 
+        {user?.role !== 'CONSUMER' && (
         <div className="traces-panel">
           {!selectedProduct ? (
             <div className="empty-state">
@@ -267,6 +282,7 @@ function TraceList() {
             </>
           )}
         </div>
+        )}
       </div>
 
       {showTraceForm && (
@@ -300,6 +316,16 @@ function TraceList() {
             if (selectedProduct === selectedProductForUpdate) {
               loadTraces(selectedProductForUpdate);
             }
+          }}
+        />
+      )}
+
+      {showProductDetail && selectedProductForDetail && (
+        <ProductDetail
+          productId={selectedProductForDetail}
+          onClose={() => {
+            setShowProductDetail(false);
+            setSelectedProductForDetail(null);
           }}
         />
       )}

@@ -1,33 +1,32 @@
-// Yêu cầu thư viện Mongoose
 const mongoose = require('mongoose');
 
-// Định nghĩa cấu trúc Schema cho User
-const UserSchema = new mongoose.Schema({
-    // user_id sẽ là _id mặc định của MongoDB
-    
-    username: {
-        type: String,
-        required: true, // Bắt buộc
-        unique: true   // Phải là duy nhất
-    },
-    password_hash: {
-        type: String,
-        required: true
-        // Trong Back-end, trước khi lưu, bạn phải Hash mật khẩu (ví dụ: dùng bcrypt)
-    },
-    role: {
-        type: String,
-        required: true,
-        // Chỉ chấp nhận các giá trị này (Giúp kiểm soát quyền)
-        enum: ['GROWER', 'TRANSPORTER', 'VERIFIER', 'ADMIN', 'CONSUMER'] 
-    },
-    email: {
-        type: String,
-        trim: true // Loại bỏ khoảng trắng thừa
-    },
-    // Tự động thêm trường createdAt và updatedAt
-    timestamps: true 
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  passwordHash: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    required: true,
+    enum: ['CONSUMER', 'GROWER', 'TRANSPORTER', 'VERIFIER', 'ADMIN'],
+    default: 'CONSUMER'
+  },
+  email: {
+    type: String,
+    trim: true
+  },
+  walletAddress: {
+    type: String,
+    trim: true
+  }
+}, {
+  timestamps: true
 });
 
-// Xuất ra Model để sử dụng trong Back-end
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', userSchema);
