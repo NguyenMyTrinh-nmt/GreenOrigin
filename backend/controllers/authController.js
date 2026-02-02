@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { ethers } = require('ethers');
 const bcrypt = require('bcryptjs');
-const LoginHistory = require('../models/LoginHistory');
+const LoginHistory = require('../../database/models/LoginHistory');
 const User = require('../models/User');
 
 // Lưu trữ tạm thời nonce (trong production nên dùng Redis)

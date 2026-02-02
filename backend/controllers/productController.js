@@ -1,6 +1,6 @@
-const Product = require('../models/Product');
-const BatchMetadata = require('../models/BatchMetadata');
-const ProductUpdate = require('../models/ProductUpdate');
+const Product = require('../../database/models/Product');
+const BatchMetadata = require('../../database/models/BatchMetadata');
+const ProductUpdate = require('../../database/models/ProductUpdate');
 const blockchainService = require('../services/blockchainService');
 const crypto = require('crypto');
 
