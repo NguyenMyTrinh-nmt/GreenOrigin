@@ -3,8 +3,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import './QRCodeModal.css';
 
 function QRCodeModal({ productId, productName, onClose }) {
-  // URL để quét QR code - dẫn đến trang public trace
-  // Sử dụng environment variable để đảm bảo QR code hoạt động trên mọi thiết bị
+  // URL để quét QR code - sử dụng environment variable để đảm bảo QR code hoạt động trên mọi thiết bị
+  // Frontend URL phải là IP cố định mà cả điện thoại lẫn máy tính có thể truy cập
   const frontendUrl = process.env.REACT_APP_FRONTEND_URL || window.location.origin;
   const qrUrl = `${frontendUrl}/trace/${productId}`;
 

@@ -11,10 +11,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://172.15.0.10:3000'
-  ],
+  origin: function (origin, callback) {
+    // Cho phép requests từ bất kỳ origin nào để QR code hoạt động trên mọi IP
+    callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
