@@ -6,6 +6,7 @@ const auth = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ No token provided. Header:', authHeader);
       return res.status(401).json({
         success: false,
         message: 'No token provided. Authorization denied.'
@@ -27,6 +28,8 @@ const auth = async (req, res, next) => {
         token,
         process.env.JWT_SECRET || 'greenorigin_secret_key_2025_metamask'
       );
+      
+      console.log('✅ Token verified. User role:', decoded.role);
 
       // Gắn thông tin user vào request (hỗ trợ cả web3 và account login)
       req.user = {
@@ -39,6 +42,7 @@ const auth = async (req, res, next) => {
 
       next();
     } catch (error) {
+      console.error('❌ Token verification failed:', error.message);
       if (error.name === 'TokenExpiredError') {
         return res.status(401).json({
           success: false,

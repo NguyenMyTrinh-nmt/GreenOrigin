@@ -2,7 +2,29 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const connectDB = require('../database/config/database');
+const mongoose = require('mongoose');
+
+// Kết nối MongoDB bằng mongoose của backend (trùng với model User)
+const connectDB = async () => {
+  try {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      console.error('❌ MONGODB_URI is not defined in .env');
+      process.exit(1);
+    }
+
+    const conn = await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log(`✅ MongoDB Connected (backend): ${conn.connection.host}`);
+    console.log(`📊 Database: ${conn.connection.name}`);
+  } catch (error) {
+    console.error(`❌ MongoDB Connection Error (backend): ${error.message}`);
+    process.exit(1);
+  }
+};
 
 // Connect to MongoDB
 connectDB();
@@ -11,10 +33,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: function (origin, callback) {
-    // Cho phép requests từ bất kỳ origin nào để QR code hoạt động trên mọi IP
-    callback(null, true);
-  },
+  origin: [
+    'http://localhost:3000',
+    'http://192.168.1.230:3000'
+  ],
   credentials: true
 }));
 app.use(express.json());
