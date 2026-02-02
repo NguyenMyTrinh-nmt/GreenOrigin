@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { ethers } = require('ethers');
 const bcrypt = require('bcryptjs');
 const LoginHistory = require('../../database/models/LoginHistory');
-const User = require('../models/User');
+const User = require('../../database/models/User');
 
 // Lưu trữ tạm thời nonce (trong production nên dùng Redis)
 const nonceStore = new Map();
